@@ -182,8 +182,7 @@ public class AuthService {
     @Transactional
     public void forgotPassword(String email) {
         log.info("Processing forgot password request for email: {}", email);
-
-        User user = userRepository.findByEmail(email)
+                userRepository.findByEmail(email)
                 .orElseThrow(() -> ResourceNotFoundException.forUser(email));
 
         String resetToken = jwtTokenProvider.generatePasswordResetToken(email);

@@ -117,13 +117,7 @@ CREATE TABLE services (
     is_active BOOLEAN DEFAULT TRUE,
     sort_order INTEGER DEFAULT 0,
     service_type VARCHAR(50),
-    display_name VARCHAR(100),
-    subtitle VARCHAR(100),
-    color VARCHAR(50),
-    accent_color VARCHAR(50),
-    is_emergency_service BOOLEAN DEFAULT FALSE,
-    emergency_text VARCHAR(100),
-    emergency_button_text VARCHAR(100)
+    display_name VARCHAR(100)
 );
 
 -- Email verification tokens table

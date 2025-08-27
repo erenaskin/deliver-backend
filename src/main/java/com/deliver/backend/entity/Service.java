@@ -1,11 +1,15 @@
-
 package com.deliver.backend.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "services")
 public class Service {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -13,11 +17,22 @@ public class Service {
     @Column(nullable = false, length = 100)
     private String name;
 
-    // Sadece işlevsel alanlar bırakıldı. UI, default, relationship ve gereksiz annotation'lar kaldırıldı.
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
-    // Getter/Setter
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    @Column(name = "icon_name", length = 100)
+    private String iconName;
+
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @Column(name = "is_active")
+    private Boolean isActive;
+
+    @Column(name = "service_type", length = 50)
+    private String serviceType;
+
+    @Column(name = "display_name", length = 100)
+    private String displayName;
+
 }

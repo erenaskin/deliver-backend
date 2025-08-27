@@ -15,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/services")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 @Tag(name = "Services", description = "Service management endpoints")
 public class ServiceController {
 
