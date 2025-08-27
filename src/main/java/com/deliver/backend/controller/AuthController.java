@@ -25,15 +25,15 @@ public class AuthController {
     @PostMapping("/register")
     @Operation(summary = "Register a new user", description = "Create a new user account")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "User registered successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid input data"),
-        @ApiResponse(responseCode = "409", description = "User already exists")
+            @ApiResponse(responseCode = "201", description = "User registered successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "409", description = "User already exists")
     })
     public ResponseEntity<LoginResponse> register(@Valid @RequestBody RegisterRequest request) {
         LoginResponse response = authService.register(request);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
 
     @PostMapping("/login")
     @Operation(summary = "User login", description = "Authenticate user and return JWT token")
@@ -53,20 +53,14 @@ public class AuthController {
         @ApiResponse(responseCode = "200", description = "Token refreshed successfully"),
         @ApiResponse(responseCode = "401", description = "Invalid refresh token")
     })
-    public ResponseEntity<LoginResponse> refreshToken(@RequestParam String refreshToken) {
+    public ResponseEntity<LoginResponse> refreshToken(@RequestHeader("Authorization") String refreshToken) {
+        // Extract token from "Bearer <token>" format
+        if (refreshToken != null && refreshToken.startsWith("Bearer ")) {
+            refreshToken = refreshToken.substring(7);
+        }
+
         LoginResponse response = authService.refreshToken(refreshToken);
         return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/logout")
-    @Operation(summary = "User logout", description = "Invalidate user session and tokens")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Logout successful"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    public ResponseEntity<String> logout(@RequestHeader("Authorization") String token) {
-        authService.logout(token);
-        return ResponseEntity.ok("Logout successful");
     }
 
     @PostMapping("/forgot-password")
@@ -86,7 +80,7 @@ public class AuthController {
         @ApiResponse(responseCode = "200", description = "Password reset successful"),
         @ApiResponse(responseCode = "400", description = "Invalid or expired reset token")
     })
-    public ResponseEntity<String> resetPassword(@RequestParam String token, 
+    public ResponseEntity<String> resetPassword(@RequestParam String token,
                                               @RequestParam String newPassword) {
         authService.resetPassword(token, newPassword);
         return ResponseEntity.ok("Password reset successful");
@@ -106,5 +100,4 @@ public class AuthController {
             return ResponseEntity.status(400).body("Invalid or expired token.");
         }
     }
-
 }

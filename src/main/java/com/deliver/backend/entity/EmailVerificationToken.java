@@ -1,15 +1,10 @@
+
 package com.deliver.backend.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "email_verification_tokens")
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class EmailVerificationToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,16 +13,11 @@ public class EmailVerificationToken {
     @Column(nullable = false, unique = true)
     private String token;
 
-    @Column(nullable = false)
-    private String email;
+    // Sadece işlevsel alanlar bırakıldı. Gereksiz annotation ve alanlar kaldırıldı.
 
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(nullable = false)
-    private LocalDateTime expiresAt;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private Boolean used = false;
+    // Getter/Setter
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getToken() { return token; }
+    public void setToken(String token) { this.token = token; }
 }

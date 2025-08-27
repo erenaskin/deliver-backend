@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,41 +17,24 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/vendors")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Vendors", description = "Vendor management endpoints")
 public class VendorController {
 
     private final VendorService vendorService;
 
     @GetMapping
-    @Operation(summary = "Get all vendors", description = "Retrieve paginated list of all vendors")
+    @Operation(summary = "Get all vendors", description = "Retrieve all vendors")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Vendors retrieved successfully"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized")
+        @ApiResponse(responseCode = "200", description = "Vendors retrieved successfully")
     })
-    public ResponseEntity<Page<VendorResponse>> getAllVendors(
-            @Parameter(description = "Pagination parameters") Pageable pageable,
-            @RequestParam(required = false) String search,
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) Boolean isActive) {
-        
-        Page<VendorResponse> vendors = vendorService.getAllVendors(pageable, search, category, isActive);
+    public ResponseEntity<List<VendorResponse>> getAllVendors() {
+        List<VendorResponse> vendors = vendorService.getAllVendors();
         return ResponseEntity.ok(vendors);
-    }
-
-    @GetMapping("/{id}")
-    @Operation(summary = "Get vendor by ID", description = "Retrieve specific vendor details")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Vendor found"),
-        @ApiResponse(responseCode = "404", description = "Vendor not found"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    public ResponseEntity<VendorResponse> getVendorById(@PathVariable Long id) {
-        VendorResponse vendor = vendorService.getVendorById(id);
-        return ResponseEntity.ok(vendor);
     }
 
     @PostMapping("/register")

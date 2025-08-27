@@ -5,6 +5,12 @@ spring:
     username: postgres
     password: Ea030903*
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      max-lifetime: 600000
+      connection-timeout: 30000
     redis:
       host: localhost
       port: 6379
@@ -38,9 +44,6 @@ spring:
 # Logging
 logging:
   level:
-    com.deliver.backend: DEBUG
-    org.springframework.security: DEBUG
-    org.springframework.web: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.orm.jdbc.bind: TRACE
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    com.deliver.backend: INFO
+    org.springframework.security: WARN
+    org.springframework.web: INFO

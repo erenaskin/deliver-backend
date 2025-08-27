@@ -24,12 +24,6 @@ public class RegisterRequest {
     @Schema(description = "User's last name", example = "Doe")
     private String lastName;
 
-    @NotBlank(message = "Username is required")
-    @Size(min = 3, max = 30, message = "Username must be between 3 and 30 characters")
-    @Pattern(regexp = "^[a-zA-Z0-9._-]+$", message = "Username can only contain letters, numbers, dots, underscores and hyphens")
-    @Schema(description = "Unique username", example = "johndoe")
-    private String username;
-
     @NotBlank(message = "Email is required")
     @Email(message = "Email must be valid")
     @Size(max = 100, message = "Email must not exceed 100 characters")
@@ -51,21 +45,9 @@ public class RegisterRequest {
     @Schema(description = "User phone number", example = "+1234567890")
     private String phoneNumber;
 
-    @Size(max = 255, message = "Address must not exceed 255 characters")
-    @Schema(description = "User address", example = "123 Main St, City, State, ZIP")
-    private String address;
-
-    @Past(message = "Birth date must be in the past")
-    @Schema(description = "User birth date", example = "1990-01-01")
-    private java.time.LocalDate birthDate;
-
     @AssertTrue(message = "You must accept the terms and conditions")
     @Schema(description = "Terms and conditions acceptance", example = "true")
     private Boolean acceptTerms;
-
-    @Schema(description = "Newsletter subscription preference", example = "true")
-    @Builder.Default
-    private Boolean subscribeNewsletter = false;
 
     // Custom validation method
     @AssertTrue(message = "Password and confirmation password must match")

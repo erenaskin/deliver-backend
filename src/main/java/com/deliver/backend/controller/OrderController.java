@@ -3,7 +3,6 @@ package com.deliver.backend.controller;
 import com.deliver.backend.dto.request.OrderRequest;
 import com.deliver.backend.dto.response.OrderResponse;
 import com.deliver.backend.entity.Order;
-import com.deliver.backend.repository.UserRepository;
 import com.deliver.backend.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -21,6 +20,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
@@ -29,40 +30,43 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
     private final OrderService orderService;
-    private final UserRepository userRepository; 
 
     @PostMapping
-    @Operation(summary = "Create new order", description = "Create a new order with cart items")
+    @Operation(summary = "Create new order", description = "Create a new order")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Order created successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid order data"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized")
+        @ApiResponse(responseCode = "400", description = "Invalid order data")
     })
-    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<OrderResponse> createOrder(
             @Valid @RequestBody OrderRequest orderRequest,
-            Authentication authentication) {
-        // userId'yi authentication'dan al
-        Long userId = null;
-        if (authentication != null && authentication.getPrincipal() instanceof com.deliver.backend.entity.User user) {
-            userId = user.getId();
-        } else if (authentication != null && authentication.getPrincipal() instanceof org.springframework.security.core.userdetails.User springUser) {
-            // Eğer kendi User entity'niz principal olarak gelmiyorsa, username ile userId bulunabilir
-            String username = springUser.getUsername();
-            // ...userId'yi UserRepository ile bulmak gerekebilir...
-            userId = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found for username: " + username))
-                .getId();
-        }
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        Long vendorId = orderRequest.getVendorId();
-        OrderResponse order = orderService.createOrder(orderRequest, userId, vendorId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(order);
+            @RequestParam Long vendorId) {
+
+        OrderResponse response = orderService.createOrder(orderRequest, vendorId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Get order by ID", description = "Retrieve order details by ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Order found"),
+        @ApiResponse(responseCode = "404", description = "Order not found")
+    })
+    public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long id) {
+        OrderResponse response = orderService.getOrderById(id);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping
+    @Operation(summary = "Get all orders", description = "Retrieve all orders")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Orders retrieved successfully")
+    })
+    public ResponseEntity<List<OrderResponse>> getAllOrders() {
+        List<OrderResponse> response = orderService.getAllOrders();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/user")
     @Operation(summary = "Get user orders", description = "Retrieve paginated list of user's orders")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Orders retrieved successfully"),
@@ -73,24 +77,10 @@ public class OrderController {
             @Parameter(description = "Pagination parameters") Pageable pageable,
             @RequestParam(required = false) String status,
             Authentication authentication) {
-        
+
         // For now using service method that gets all orders - should be filtered by user
         Page<OrderResponse> orders = orderService.getAllOrders(pageable);
         return ResponseEntity.ok(orders);
-    }
-
-    @GetMapping("/{id}")
-    @Operation(summary = "Get order by ID", description = "Retrieve specific order details")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Order found"),
-        @ApiResponse(responseCode = "404", description = "Order not found"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized"),
-        @ApiResponse(responseCode = "403", description = "Access denied")
-    })
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Object> getOrderById(@PathVariable Long id) {
-        Object order = orderService.getOrderById(id);
-        return ResponseEntity.ok(order);
     }
 
     @PutMapping("/{id}/cancel")
@@ -122,7 +112,7 @@ public class OrderController {
     public ResponseEntity<OrderResponse> updateOrderStatus(
             @PathVariable Long id,
             @RequestParam String status) {
-        
+
         Order.OrderStatus orderStatus = Order.OrderStatus.valueOf(status.toUpperCase());
         OrderResponse updatedOrder = orderService.updateOrderStatus(id, orderStatus);
         return ResponseEntity.ok(updatedOrder);
@@ -154,7 +144,7 @@ public class OrderController {
             @PathVariable Long id,
             @RequestParam Integer rating,
             @RequestParam(required = false) String comment) {
-        
+
         orderService.rateOrder(id, rating, comment);
         return ResponseEntity.ok("Order rated successfully");
     }
@@ -172,7 +162,7 @@ public class OrderController {
             @Parameter(description = "Pagination parameters") Pageable pageable,
             @RequestParam(required = false) String status,
             Authentication authentication) {
-        
+
         // For now using service method that gets all orders - should be filtered by vendor
         Page<OrderResponse> orders = orderService.getAllOrders(pageable);
         return ResponseEntity.ok(orders);

@@ -32,7 +32,6 @@ public class VendorService {
         log.info("Fetching all vendors");
         return vendorRepository.findAll()
                 .stream()
-                .filter(v -> v.getStatus() == Vendor.VendorStatus.ACTIVE)
                 .map(this::mapToResponse)
                 .toList();
     }
@@ -45,15 +44,52 @@ public class VendorService {
         return mapToResponse(vendor);
     }
 
-    @Transactional(readOnly = true)
-    public List<VendorResponse> getVendorsByCategory(String category) {
-        log.info("Fetching vendors by category: {}", category);
-        return vendorRepository.findByCategoryIgnoreCase(category)
-                .stream()
-                .filter(v -> v.getStatus() == Vendor.VendorStatus.ACTIVE)
-                .map(this::mapToResponse)
-                .toList();
+    @Transactional
+    public VendorResponse createVendor(VendorRequest request) {
+        log.info("Creating new vendor: {}", request.getBusinessName());
+
+        validateVendorRequest(request);
+
+        Vendor vendor = Vendor.builder()
+                .businessName(request.getBusinessName())
+                .build();
+
+        vendor = vendorRepository.save(vendor);
+        log.info("Vendor created successfully with ID: {}", vendor.getId());
+
+        return mapToResponse(vendor);
     }
+
+    @Transactional
+    public VendorResponse updateVendor(Long id, VendorRequest request) {
+        log.info("Updating vendor with ID: {}", id);
+
+        Vendor vendor = vendorRepository.findById(id)
+                .orElseThrow(() -> ResourceNotFoundException.forVendor(id));
+
+        validateVendorRequest(request);
+
+        vendor.setBusinessName(request.getBusinessName());
+
+        vendor = vendorRepository.save(vendor);
+        log.info("Vendor updated successfully: {}", id);
+
+        return mapToResponse(vendor);
+    }
+
+    private void validateVendorRequest(VendorRequest request) {
+        if (request.getBusinessName() == null || request.getBusinessName().trim().isEmpty()) {
+            throw new BadRequestException("Business name is required");
+        }
+    }
+
+    private VendorResponse mapToResponse(Vendor vendor) {
+        return VendorResponse.builder()
+                .id(vendor.getId())
+                .businessName(vendor.getBusinessName())
+                .build();
+    }
+
 
     @Transactional(readOnly = true)
     public List<VendorResponse> getVendorsDelivering(Double latitude, Double longitude) {
@@ -98,101 +134,19 @@ public class VendorService {
         return new PageImpl<>(responses, pageable, responses.size());
     }
 
-    @Transactional(readOnly = true)
-    public Page<VendorResponse> searchVendors(String keyword, Pageable pageable) {
-        log.info("Searching vendors with keyword: {}", keyword);
-        return vendorRepository.searchVendors(keyword, null, pageable)
-                .map(this::mapToResponse);
-    }
-
-    @Transactional
-    public VendorResponse createVendor(VendorRequest request) {
-        log.info("Creating new vendor: {}", request.getBusinessName());
-        
-        validateVendorRequest(request);
-        
-        Vendor vendor = Vendor.builder()
-                .businessName(request.getBusinessName())
-                .description(request.getDescription())
-                .category(request.getCategory())
-                .businessEmail(request.getBusinessEmail())
-                .phoneNumber(request.getPhoneNumber())
-                .websiteUrl(request.getWebsiteUrl())
-                .logoUrl(request.getLogoUrl())
-                .bannerImageUrl(request.getBannerImageUrl())
-                .status(Vendor.VendorStatus.PENDING)
-                .isAcceptingOrders(true)
-                .averageRating(BigDecimal.ZERO)
-                .reviewCount(0)
-                .totalOrders(0)
-                .estimatedDeliveryTimeMinutes(request.getEstimatedDeliveryTimeMinutes())
-                .deliveryFee(request.getDeliveryFee())
-                .minimumOrderAmount(request.getMinimumOrderAmount())
-                .deliveryRadiusKm(request.getDeliveryRadiusKm())
-                .taxId(request.getTaxId())
-                .businessLicenseNumber(request.getBusinessLicenseNumber())
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
-        
-        // Set address if provided
-        if (request.getAddress() != null) {
-            vendor.setAddress(request.getAddress());
-        }
-        
-        vendor = vendorRepository.save(vendor);
-        log.info("Vendor created successfully with ID: {}", vendor.getId());
-        
-        return mapToResponse(vendor);
-    }
-
-    @Transactional
-    public VendorResponse updateVendor(Long id, VendorRequest request) {
-        log.info("Updating vendor with ID: {}", id);
-        
-        Vendor vendor = vendorRepository.findById(id)
-                .orElseThrow(() -> ResourceNotFoundException.forVendor(id));
-        
-        validateVendorRequest(request);
-        
-        // Update vendor fields
-        vendor.setBusinessName(request.getBusinessName());
-        vendor.setDescription(request.getDescription());
-        vendor.setCategory(request.getCategory());
-        vendor.setBusinessEmail(request.getBusinessEmail());
-        vendor.setPhoneNumber(request.getPhoneNumber());
-        vendor.setWebsiteUrl(request.getWebsiteUrl());
-        vendor.setLogoUrl(request.getLogoUrl());
-        vendor.setBannerImageUrl(request.getBannerImageUrl());
-        vendor.setDeliveryFee(request.getDeliveryFee());
-        vendor.setMinimumOrderAmount(request.getMinimumOrderAmount());
-        vendor.setDeliveryRadiusKm(request.getDeliveryRadiusKm());
-        vendor.setEstimatedDeliveryTimeMinutes(request.getEstimatedDeliveryTimeMinutes());
-        vendor.setUpdatedAt(LocalDateTime.now());
-        
-        // Update address if provided
-        if (request.getAddress() != null) {
-            vendor.setAddress(request.getAddress());
-        }
-        
-        vendor = vendorRepository.save(vendor);
-        log.info("Vendor updated successfully: {}", id);
-        
-        return mapToResponse(vendor);
-    }
 
     @Transactional
     public void deleteVendor(Long id) {
         log.info("Deleting vendor with ID: {}", id);
-        
+
         Vendor vendor = vendorRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.forVendor(id));
-        
+
         // Soft delete by marking as inactive
         vendor.setStatus(Vendor.VendorStatus.INACTIVE);
         vendor.setIsAcceptingOrders(false);
         vendor.setUpdatedAt(LocalDateTime.now());
-        
+
         vendorRepository.save(vendor);
         log.info("Vendor marked as inactive: {}", id);
     }
@@ -200,13 +154,13 @@ public class VendorService {
     @Transactional
     public void toggleVendorStatus(Long id) {
         log.info("Toggling vendor status for ID: {}", id);
-        
+
         Vendor vendor = vendorRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.forVendor(id));
-        
+
         vendor.setIsAcceptingOrders(!vendor.getIsAcceptingOrders());
         vendor.setUpdatedAt(LocalDateTime.now());
-        
+
         vendorRepository.save(vendor);
         log.info("Vendor status toggled for ID: {}. Now accepting orders: {}", id, vendor.getIsAcceptingOrders());
     }
@@ -214,73 +168,16 @@ public class VendorService {
     @Transactional
     public void updateVendorRating(Long id, BigDecimal newRating, int reviewCount) {
         log.info("Updating vendor rating for ID: {} to {}", id, newRating);
-        
+
         Vendor vendor = vendorRepository.findById(id)
                 .orElseThrow(() -> ResourceNotFoundException.forVendor(id));
-        
+
         vendor.updateRating(newRating, reviewCount);
         vendorRepository.save(vendor);
-        
+
         log.info("Vendor rating updated for ID: {}", id);
     }
 
-    private void validateVendorRequest(VendorRequest request) {
-        if (request.getBusinessName() == null || request.getBusinessName().trim().isEmpty()) {
-            throw new BadRequestException("Business name is required");
-        }
-        
-        if (request.getCategory() == null || request.getCategory().trim().isEmpty()) {
-            throw new BadRequestException("Business category is required");
-        }
-        
-        if (request.getBusinessEmail() == null || !isValidEmail(request.getBusinessEmail())) {
-            throw new BadRequestException("Valid business email is required");
-        }
-        
-        if (request.getPhoneNumber() == null || request.getPhoneNumber().trim().isEmpty()) {
-            throw new BadRequestException("Phone number is required");
-        }
-        
-        if (request.getDeliveryFee() == null || request.getDeliveryFee().compareTo(BigDecimal.ZERO) < 0) {
-            throw new BadRequestException("Delivery fee must be non-negative");
-        }
-        
-        if (request.getMinimumOrderAmount() == null || request.getMinimumOrderAmount().compareTo(BigDecimal.ZERO) < 0) {
-            throw new BadRequestException("Minimum order amount must be non-negative");
-        }
-    }
-
-    private boolean isValidEmail(String email) {
-        return email != null && email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
-    }
-
-    private VendorResponse mapToResponse(Vendor vendor) {
-        return VendorResponse.builder()
-                .id(vendor.getId())
-                .businessName(vendor.getBusinessName())
-                .description(vendor.getDescription())
-                .category(vendor.getCategory())
-                .subcategory(vendor.getSubcategory())
-                .businessEmail(vendor.getBusinessEmail())
-                .phoneNumber(vendor.getPhoneNumber())
-                .websiteUrl(vendor.getWebsiteUrl())
-                .logoUrl(vendor.getLogoUrl())
-                .bannerImageUrl(vendor.getBannerImageUrl())
-                .address(vendor.getAddress())
-                .minimumOrderAmount(vendor.getMinimumOrderAmount())
-                .deliveryFee(vendor.getDeliveryFee())
-                .estimatedDeliveryTimeMinutes(vendor.getEstimatedDeliveryTimeMinutes())
-                .deliveryRadiusKm(vendor.getDeliveryRadiusKm())
-                .averageRating(vendor.getAverageRating().doubleValue())
-                .reviewCount(vendor.getReviewCount())
-                .totalOrders(vendor.getTotalOrders())
-                .status(vendor.getStatus().name())
-                .isAcceptingOrders(vendor.getIsAcceptingOrders())
-                .approvedAt(vendor.getApprovedAt())
-                .createdAt(vendor.getCreatedAt())
-                .updatedAt(vendor.getUpdatedAt())
-                .build();
-    }
 
     @Transactional(readOnly = true)
     public Page<VendorResponse> getAllVendors(Pageable pageable, String search, String category, Boolean isActive) {
@@ -363,14 +260,14 @@ public class VendorService {
     @Transactional
     public void approveVendor(Long vendorId) {
         log.info("Approving vendor: {}", vendorId);
-        
+
         Vendor vendor = vendorRepository.findById(vendorId)
                 .orElseThrow(() -> ResourceNotFoundException.forVendor(vendorId));
-        
+
         vendor.setStatus(Vendor.VendorStatus.ACTIVE);
         vendor.setApprovedAt(LocalDateTime.now());
         vendor.setUpdatedAt(LocalDateTime.now());
-        
+
         vendorRepository.save(vendor);
         log.info("Vendor approved: {}", vendorId);
     }
@@ -378,14 +275,14 @@ public class VendorService {
     @Transactional
     public void rejectVendor(Long vendorId, String reason) {
         log.info("Rejecting vendor: {} with reason: {}", vendorId, reason);
-        
+
         Vendor vendor = vendorRepository.findById(vendorId)
                 .orElseThrow(() -> ResourceNotFoundException.forVendor(vendorId));
-        
+
         vendor.setStatus(Vendor.VendorStatus.REJECTED);
         vendor.setRejectionReason(reason);
         vendor.setUpdatedAt(LocalDateTime.now());
-        
+
         vendorRepository.save(vendor);
         log.info("Vendor rejected: {}", vendorId);
     }

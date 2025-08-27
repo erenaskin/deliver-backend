@@ -2,15 +2,17 @@
 package com.deliver.backend.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import java.time.LocalDate;
+
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Collection;
+import java.util.Collections;
 
 @Entity
 @Table(name = "users")
@@ -19,148 +21,86 @@ import java.util.Collection;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User implements UserDetails {
-	public String getProfilePictureUrl() {
-		// Return a default or stored profile picture URL
-		// You can replace this with your actual logic
-		return "";
-	}
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
 
-	@Column(nullable = false, unique = true, length = 100)
-	private String email;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Column(nullable = false, unique = true, length = 50)
-	private String username;
+    @Column(nullable = false, length = 50)
+    private String firstName;
 
-	@Column(nullable = false, length = 100)
-	private String firstName;
+    @Column(nullable = false, length = 50)
+    private String lastName;
 
-	@Column(nullable = false, length = 100)
-	private String lastName;
+    @Column(nullable = false, unique = true, length = 50)
+    private String username;
 
-    @Column(name = "password", nullable = false)
+    @Column(nullable = false, unique = true, length = 100)
+    private String email;
+
+    @Column(nullable = false)
     private String password;
 
-	@Column(nullable = false)
-	@Builder.Default
-	private Boolean emailVerified = false;
+    @Column(length = 20)
+    private String phoneNumber;
 
-	@Column(nullable = false)
-	@Builder.Default
-	private Boolean subscribeNewsletter = false;
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private UserRole role = UserRole.USER;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	@Builder.Default
-	private UserStatus status = UserStatus.ACTIVE;
+    @Builder.Default
+    private Boolean enabled = true;
 
-	@ElementCollection(fetch = FetchType.EAGER)
-	@Enumerated(EnumType.STRING)
-	@CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
-	@Column(name = "role")
-	@Builder.Default
-	private Set<UserRole> roles = new HashSet<>();
+    @Builder.Default
+    private Boolean accountNonExpired = true;
 
-	@Column(length = 20)
-	private String phoneNumber;
+    @Builder.Default
+    private Boolean accountNonLocked = true;
 
-	@Column(length = 255)
-	private String address;
+    @Builder.Default
+    private Boolean credentialsNonExpired = true;
 
-	private LocalDate birthDate;
+    private LocalDateTime lastLoginAt;
 
-	private LocalDateTime createdAt;
-	private LocalDateTime updatedAt;
-	private LocalDateTime lastLoginAt;
+    private LocalDateTime createdAt;
 
-	// Relationships
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private Set<Vendor> vendors;
+    private LocalDateTime updatedAt;
 
-	@ManyToMany
-	@JoinTable(
-		name = "user_favorite_products",
-		joinColumns = @JoinColumn(name = "user_id"),
-		inverseJoinColumns = @JoinColumn(name = "product_id")
-	)
-	@Builder.Default
-	private Set<Product> favoriteProducts = new HashSet<>();
+    public Collection<? extends GrantedAuthority> getRoles() {
+        return getAuthorities();
+    }
 
-	// Enums
-	public enum UserStatus {
-		ACTIVE, LOCKED, DISABLED
-	}
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name()));
+    }
 
-	public enum UserRole {
-		USER, VENDOR, ADMIN
-	}
+    @Override
+    public String getUsername() {
+        return email;
+    }
 
-	// Helper methods
-	public String getFullName() {
-		return firstName + " " + lastName;
-	}
+    @Override
+    public boolean isAccountNonExpired() {
+        return accountNonExpired;
+    }
 
-	public boolean hasRole(UserRole role) {
-		return roles != null && roles.contains(role);
-	}
+    @Override
+    public boolean isAccountNonLocked() {
+        return accountNonLocked;
+    }
 
-	public void addRole(UserRole role) {
-		if (roles == null) roles = new HashSet<>();
-		roles.add(role);
-	}
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return credentialsNonExpired;
+    }
 
-	public void removeRole(UserRole role) {
-		if (roles != null) roles.remove(role);
-	}
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
 
-	public Set<UserRole> getRoles() {
-		return roles;
-	}
-
-	public void setRoles(Set<UserRole> roles) {
-		this.roles = roles;
-	}
-
-	public void setLastLoginAt(LocalDateTime lastLoginAt) {
-		this.lastLoginAt = lastLoginAt;
-	}
-
-	// Spring Security UserDetails implementation
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		Set<SimpleGrantedAuthority> authorities = new HashSet<>();
-		if (roles != null) {
-			for (UserRole role : roles) {
-				authorities.add(new SimpleGrantedAuthority("ROLE_" + role.name()));
-			}
-		}
-		return authorities;
-	}
-
-	@Override
-	public String getUsername() {
-		return email; // Spring Security uses email as username
-	}
-
-	@Override
-	public boolean isAccountNonExpired() {
-		return true;
-	}
-
-	@Override
-	public boolean isAccountNonLocked() {
-		return status != UserStatus.LOCKED;
-	}
-
-	@Override
-	public boolean isCredentialsNonExpired() {
-		return true;
-	}
-
-	@Override
-	public boolean isEnabled() {
-		return status == UserStatus.ACTIVE && Boolean.TRUE.equals(emailVerified);
-	}
+    public enum UserRole {
+        USER, ADMIN, VENDOR
+    }
 }
