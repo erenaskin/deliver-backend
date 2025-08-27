@@ -20,4 +20,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByIsFeaturedTrue();
 
     Page<Product> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String name, String description, Pageable pageable);
+
+    List<Product> findByServiceTypeAndIsFeaturedTrue(String serviceType);
+
+    List<Product> findByServiceType(String serviceType);
 }

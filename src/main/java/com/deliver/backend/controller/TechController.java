@@ -1,7 +1,7 @@
 package com.deliver.backend.controller;
 
-import com.deliver.backend.dto.response.ProductResponse;
-import com.deliver.backend.dto.response.VendorResponse;
+import com.deliver.backend.dto.response.TechProductResponse;
+import com.deliver.backend.dto.response.TechStoreResponse;
 import com.deliver.backend.service.TechService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,22 +23,22 @@ public class TechController {
     private final TechService techService;
 
     @GetMapping("/popular-products")
-    @Operation(summary = "Get popular products", description = "Retrieve popular products")
+    @Operation(summary = "Get popular tech products", description = "Retrieve popular technology products")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Popular products retrieved successfully")
+        @ApiResponse(responseCode = "200", description = "Popular tech products retrieved successfully")
     })
-    public ResponseEntity<List<ProductResponse>> getPopularProducts() {
-        List<ProductResponse> products = techService.getPopularProducts();
+    public ResponseEntity<List<TechProductResponse>> getPopularProducts() {
+        List<TechProductResponse> products = techService.getPopularProducts();
         return ResponseEntity.ok(products);
     }
 
     @GetMapping("/stores")
-    @Operation(summary = "Get stores", description = "Retrieve available stores")
+    @Operation(summary = "Get tech stores", description = "Retrieve available technology stores")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Stores retrieved successfully")
+        @ApiResponse(responseCode = "200", description = "Tech stores retrieved successfully")
     })
-    public ResponseEntity<List<VendorResponse>> getStores() {
-        List<VendorResponse> stores = techService.getStores();
+    public ResponseEntity<List<TechStoreResponse>> getStores() {
+        List<TechStoreResponse> stores = techService.getStores();
         return ResponseEntity.ok(stores);
     }
 }

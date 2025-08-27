@@ -40,6 +40,10 @@ public class Product {
     @Builder.Default
     private Boolean isAvailable = true;
 
+    @Column(length = 20)
+    @Builder.Default
+    private String serviceType = "FOOD";
+
     @Column(nullable = false)
     private Long vendorId;
 

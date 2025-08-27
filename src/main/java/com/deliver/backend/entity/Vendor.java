@@ -59,6 +59,10 @@ public class Vendor {
     @Builder.Default
     private Boolean isAcceptingOrders = true;
 
+    @Column(length = 20)
+    @Builder.Default
+    private String serviceType = "FOOD";
+
     @Builder.Default
     private BigDecimal averageRating = BigDecimal.ZERO;
 
