@@ -1,0 +1,46 @@
+# Development environment configuration
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/deliver_dev
+    username: postgres
+    password: Ea030903*
+    driver-class-name: org.postgresql.Driver
+    redis:
+      host: localhost
+      port: 6379
+      password: your_redis_password
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      format_sql: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: deliver.backend.app@gmail.com
+    password: ytbkffrdcnkmotkn
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+    protocol: smtp
+  
+  flyway:
+    enabled: false
+    locations: classpath:db/migration
+    validate-on-migrate: false
+    clean-disabled: false
+
+# Logging
+logging:
+  level:
+    com.deliver.backend: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

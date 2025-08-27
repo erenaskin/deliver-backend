@@ -1,0 +1,30 @@
+# Production environment configuration
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+  
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  data:
+    redis:
+      password: ${REDIS_PASSWORD}
+      port: ${REDIS_PORT}
+      host: ${REDIS_HOST}
+
+# Logging
+logging:
+  level:
+    com.deliver.backend: INFO
+    org.springframework.security: WARN
