@@ -145,6 +145,71 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
 
+    @GetMapping("/popular/{serviceType}")
+    @Operation(summary = "Get popular products by service type", description = "Retrieve popular products based on popularity score")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Popular products retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    public ResponseEntity<List<ProductResponse>> getPopularProductsByServiceType(
+            @PathVariable String serviceType,
+            @RequestParam(defaultValue = "10") int limit) {
+        List<ProductResponse> products = productService.getPopularProductsByServiceType(serviceType, limit);
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/daily-popular/{serviceType}")
+    @Operation(summary = "Get daily popular products", description = "Retrieve products popular in the last 24 hours")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Daily popular products retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    public ResponseEntity<List<ProductResponse>> getDailyPopularProducts(
+            @PathVariable String serviceType,
+            @RequestParam(defaultValue = "10") int limit) {
+        List<ProductResponse> products = productService.getDailyPopularProducts(serviceType, limit);
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/top-rated/{serviceType}")
+    @Operation(summary = "Get top rated products", description = "Retrieve highest rated products with minimum 5 ratings")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Top rated products retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    public ResponseEntity<List<ProductResponse>> getTopRatedProducts(
+            @PathVariable String serviceType,
+            @RequestParam(defaultValue = "10") int limit) {
+        List<ProductResponse> products = productService.getTopRatedProducts(serviceType, limit);
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/best-selling/{serviceType}")
+    @Operation(summary = "Get best selling products", description = "Retrieve products with highest order count")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Best selling products retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    public ResponseEntity<List<ProductResponse>> getBestSellingProducts(
+            @PathVariable String serviceType,
+            @RequestParam(defaultValue = "10") int limit) {
+        List<ProductResponse> products = productService.getBestSellingProducts(serviceType, limit);
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/trending/{serviceType}")
+    @Operation(summary = "Get trending products", description = "Retrieve trending products from the last week")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Trending products retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    public ResponseEntity<List<ProductResponse>> getTrendingProducts(
+            @PathVariable String serviceType,
+            @RequestParam(defaultValue = "10") int limit) {
+        List<ProductResponse> products = productService.getTrendingProducts(serviceType, limit);
+        return ResponseEntity.ok(products);
+    }
+
     @GetMapping("/search")
     @Operation(summary = "Search products", description = "Search products by name, description, or category")
     @ApiResponses(value = {

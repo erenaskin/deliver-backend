@@ -85,6 +85,23 @@ public class Product {
     @Builder.Default
     private Boolean isFeatured = false;
 
+    @Builder.Default
+    private Integer popularityScore = 0;
+
+    @Builder.Default
+    private Integer viewCount = 0;
+
+    @Builder.Default
+    private Integer orderCount = 0;
+
+    @Builder.Default
+    private Double averageRating = 0.0;
+
+    @Builder.Default
+    private Integer ratingCount = 0;
+
+    private LocalDateTime lastViewedAt;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

@@ -19,7 +19,7 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class FoodService {
+public class PetService {
 
     private final ProductRepository productRepository;
     private final VendorRepository vendorRepository;
@@ -27,12 +27,11 @@ public class FoodService {
 
     @Transactional(readOnly = true)
     public List<FoodProductResponse> getPopularProducts() {
-        log.info("Fetching popular food products");
+        log.info("Fetching popular pet products");
 
-        // Get popular food products using popularity score
-        List<Product> popularFoodProducts = productRepository.findTop10ByServiceTypeOrderByPopularityScoreDesc(ServiceType.FOOD.name());
+        List<Product> featuredPetProducts = productRepository.findByServiceTypeAndIsFeaturedTrue(ServiceType.PET.name());
 
-        return popularFoodProducts.stream()
+        return featuredPetProducts.stream()
                 .limit(10)
                 .map(this::mapToFoodProductResponse)
                 .toList();
@@ -40,12 +39,11 @@ public class FoodService {
 
     @Transactional(readOnly = true)
     public List<FoodStoreResponse> getStores() {
-        log.info("Fetching food stores");
+        log.info("Fetching pet stores");
 
-        // Get active food vendors using service_type
-        List<Vendor> activeFoodVendors = vendorRepository.findByServiceTypeAndStatus(ServiceType.FOOD.name(), Vendor.VendorStatus.ACTIVE);
+        List<Vendor> activePetVendors = vendorRepository.findByServiceTypeAndStatus(ServiceType.PET.name(), Vendor.VendorStatus.ACTIVE);
 
-        return activeFoodVendors.stream()
+        return activePetVendors.stream()
                 .limit(20)
                 .map(this::mapToFoodStoreResponse)
                 .toList();
@@ -54,7 +52,7 @@ public class FoodService {
     private FoodProductResponse mapToFoodProductResponse(Product product) {
         return FoodProductResponse.builder()
                 .name(product.getName())
-                .category(product.getCategory() != null ? product.getCategory() : "Yiyecek")
+                .category(product.getCategory() != null ? product.getCategory() : "Pet Ürünleri")
                 .price(product.getPrice())
                 .emoji(getProductEmoji(product.getCategory()))
                 .build();
@@ -63,7 +61,7 @@ public class FoodService {
     private FoodStoreResponse mapToFoodStoreResponse(Vendor vendor) {
         return FoodStoreResponse.builder()
                 .name(vendor.getBusinessName())
-                .description(vendor.getDescription() != null ? vendor.getDescription() : "Lezzetli yemekler")
+                .description(vendor.getDescription() != null ? vendor.getDescription() : "Pet ürünleri ve bakım")
                 .rating(vendor.getAverageRating())
                 .deliveryTime(generateDeliveryTime())
                 .deliveryFee(vendor.getDeliveryFee() != null ? vendor.getDeliveryFee() : BigDecimal.valueOf(4.99))
@@ -74,30 +72,24 @@ public class FoodService {
     }
 
     private String getProductEmoji(String category) {
-        if (category == null) return "🍽️";
+        if (category == null) return "🐾";
 
         String lowerCategory = category.toLowerCase();
 
-        if (lowerCategory.contains("pizza")) {
-            return "🍕";
-        } else if (lowerCategory.contains("hamburger") || lowerCategory.contains("burger")) {
-            return "🍔";
-        } else if (lowerCategory.contains("çorba") || lowerCategory.contains("soup")) {
-            return "🍜";
-        } else if (lowerCategory.contains("salata")) {
-            return "🥗";
-        } else if (lowerCategory.contains("tatlı") || lowerCategory.contains("dessert")) {
-            return "🍰";
-        } else if (lowerCategory.contains("kahve") || lowerCategory.contains("coffee")) {
-            return "☕";
-        } else if (lowerCategory.contains("döner")) {
-            return "🥙";
-        } else if (lowerCategory.contains("lahmacun")) {
-            return "🥙";
-        } else if (lowerCategory.contains("kebap")) {
+        if (lowerCategory.contains("kedi") || lowerCategory.contains("cat")) {
+            return "🐱";
+        } else if (lowerCategory.contains("köpek") || lowerCategory.contains("dog")) {
+            return "🐶";
+        } else if (lowerCategory.contains("kuş") || lowerCategory.contains("bird")) {
+            return "🐦";
+        } else if (lowerCategory.contains("balık") || lowerCategory.contains("fish")) {
+            return "🐠";
+        } else if (lowerCategory.contains("mama")) {
             return "🍖";
+        } else if (lowerCategory.contains("aksesuar")) {
+            return "🦴";
         } else {
-            return "🍽️";
+            return "🐾";
         }
     }
 
@@ -106,26 +98,20 @@ public class FoodService {
 
         String lowerCategory = category.toLowerCase();
 
-        if (lowerCategory.contains("pizza") || lowerCategory.contains("italyan")) {
-            return "🍕";
-        } else if (lowerCategory.contains("hamburger") || lowerCategory.contains("fast food")) {
-            return "🍔";
-        } else if (lowerCategory.contains("çorba") || lowerCategory.contains("soup")) {
-            return "🍜";
-        } else if (lowerCategory.contains("kahve") || lowerCategory.contains("coffee")) {
-            return "☕";
-        } else if (lowerCategory.contains("tatlı") || lowerCategory.contains("pastane")) {
-            return "🍰";
-        } else if (lowerCategory.contains("döner") || lowerCategory.contains("kebap")) {
-            return "🥙";
+        if (lowerCategory.contains("kedi")) {
+            return "🐱";
+        } else if (lowerCategory.contains("köpek")) {
+            return "🐶";
+        } else if (lowerCategory.contains("pet")) {
+            return "🐾";
         } else {
             return "🏪";
         }
     }
 
     private String generateDeliveryTime() {
-        int min = 20 + random.nextInt(25); // 20-45 dakika arası
-        int max = min + 10 + random.nextInt(20); // min'den 10-30 dakika sonrası
+        int min = 20 + random.nextInt(25);
+        int max = min + 10 + random.nextInt(20);
         return min + "-" + max + " dk";
     }
 }

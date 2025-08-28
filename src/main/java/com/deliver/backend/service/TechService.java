@@ -29,10 +29,10 @@ public class TechService {
     public List<TechProductResponse> getPopularProducts() {
         log.info("Fetching popular tech products");
 
-        // Get featured tech products using service_type
-        List<Product> featuredTechProducts = productRepository.findByServiceTypeAndIsFeaturedTrue(ServiceType.TECH.name());
+        // Get popular tech products using popularity score
+        List<Product> popularTechProducts = productRepository.findTop10ByServiceTypeOrderByPopularityScoreDesc(ServiceType.TECH.name());
 
-        return featuredTechProducts.stream()
+        return popularTechProducts.stream()
                 .limit(10)
                 .map(this::mapToTechProductResponse)
                 .toList();

@@ -35,12 +35,11 @@ spring:
     locations: classpath:db/migration
     validate-on-migrate: false
     clean-disabled: false
-    clean-on-validation-error: true
     baseline-on-migrate: true
   data:
     redis:
       password: your_redis_password
-      port: 6379
+      port: 6380
       host: localhost
 
 # Logging

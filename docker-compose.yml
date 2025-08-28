@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: deliver-postgres
+    environment:
+      POSTGRES_DB: deliver_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Ea030903*
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - deliver-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: deliver-redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - deliver-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  deliver-network:
+    driver: bridge

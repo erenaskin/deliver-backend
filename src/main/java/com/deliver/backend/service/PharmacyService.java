@@ -19,7 +19,7 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class FoodService {
+public class PharmacyService {
 
     private final ProductRepository productRepository;
     private final VendorRepository vendorRepository;
@@ -27,12 +27,11 @@ public class FoodService {
 
     @Transactional(readOnly = true)
     public List<FoodProductResponse> getPopularProducts() {
-        log.info("Fetching popular food products");
+        log.info("Fetching popular pharmacy products");
 
-        // Get popular food products using popularity score
-        List<Product> popularFoodProducts = productRepository.findTop10ByServiceTypeOrderByPopularityScoreDesc(ServiceType.FOOD.name());
+        List<Product> featuredPharmacyProducts = productRepository.findByServiceTypeAndIsFeaturedTrue(ServiceType.PHARMACY.name());
 
-        return popularFoodProducts.stream()
+        return featuredPharmacyProducts.stream()
                 .limit(10)
                 .map(this::mapToFoodProductResponse)
                 .toList();
@@ -40,12 +39,11 @@ public class FoodService {
 
     @Transactional(readOnly = true)
     public List<FoodStoreResponse> getStores() {
-        log.info("Fetching food stores");
+        log.info("Fetching pharmacy stores");
 
-        // Get active food vendors using service_type
-        List<Vendor> activeFoodVendors = vendorRepository.findByServiceTypeAndStatus(ServiceType.FOOD.name(), Vendor.VendorStatus.ACTIVE);
+        List<Vendor> activePharmacyVendors = vendorRepository.findByServiceTypeAndStatus(ServiceType.PHARMACY.name(), Vendor.VendorStatus.ACTIVE);
 
-        return activeFoodVendors.stream()
+        return activePharmacyVendors.stream()
                 .limit(20)
                 .map(this::mapToFoodStoreResponse)
                 .toList();
@@ -54,7 +52,7 @@ public class FoodService {
     private FoodProductResponse mapToFoodProductResponse(Product product) {
         return FoodProductResponse.builder()
                 .name(product.getName())
-                .category(product.getCategory() != null ? product.getCategory() : "Yiyecek")
+                .category(product.getCategory() != null ? product.getCategory() : "İlaç & Sağlık")
                 .price(product.getPrice())
                 .emoji(getProductEmoji(product.getCategory()))
                 .build();
@@ -63,7 +61,7 @@ public class FoodService {
     private FoodStoreResponse mapToFoodStoreResponse(Vendor vendor) {
         return FoodStoreResponse.builder()
                 .name(vendor.getBusinessName())
-                .description(vendor.getDescription() != null ? vendor.getDescription() : "Lezzetli yemekler")
+                .description(vendor.getDescription() != null ? vendor.getDescription() : "İlaç ve sağlık ürünleri")
                 .rating(vendor.getAverageRating())
                 .deliveryTime(generateDeliveryTime())
                 .deliveryFee(vendor.getDeliveryFee() != null ? vendor.getDeliveryFee() : BigDecimal.valueOf(4.99))
@@ -74,30 +72,20 @@ public class FoodService {
     }
 
     private String getProductEmoji(String category) {
-        if (category == null) return "🍽️";
+        if (category == null) return "💊";
 
         String lowerCategory = category.toLowerCase();
 
-        if (lowerCategory.contains("pizza")) {
-            return "🍕";
-        } else if (lowerCategory.contains("hamburger") || lowerCategory.contains("burger")) {
-            return "🍔";
-        } else if (lowerCategory.contains("çorba") || lowerCategory.contains("soup")) {
-            return "🍜";
-        } else if (lowerCategory.contains("salata")) {
-            return "🥗";
-        } else if (lowerCategory.contains("tatlı") || lowerCategory.contains("dessert")) {
-            return "🍰";
-        } else if (lowerCategory.contains("kahve") || lowerCategory.contains("coffee")) {
-            return "☕";
-        } else if (lowerCategory.contains("döner")) {
-            return "🥙";
-        } else if (lowerCategory.contains("lahmacun")) {
-            return "🥙";
-        } else if (lowerCategory.contains("kebap")) {
-            return "🍖";
+        if (lowerCategory.contains("ilaç") || lowerCategory.contains("medicine")) {
+            return "💊";
+        } else if (lowerCategory.contains("vitamin")) {
+            return "🧴";
+        } else if (lowerCategory.contains("takviye")) {
+            return "💊";
+        } else if (lowerCategory.contains("malzeme") || lowerCategory.contains("supplies")) {
+            return "🩺";
         } else {
-            return "🍽️";
+            return "💊";
         }
     }
 
@@ -106,26 +94,16 @@ public class FoodService {
 
         String lowerCategory = category.toLowerCase();
 
-        if (lowerCategory.contains("pizza") || lowerCategory.contains("italyan")) {
-            return "🍕";
-        } else if (lowerCategory.contains("hamburger") || lowerCategory.contains("fast food")) {
-            return "🍔";
-        } else if (lowerCategory.contains("çorba") || lowerCategory.contains("soup")) {
-            return "🍜";
-        } else if (lowerCategory.contains("kahve") || lowerCategory.contains("coffee")) {
-            return "☕";
-        } else if (lowerCategory.contains("tatlı") || lowerCategory.contains("pastane")) {
-            return "🍰";
-        } else if (lowerCategory.contains("döner") || lowerCategory.contains("kebap")) {
-            return "🥙";
+        if (lowerCategory.contains("eczane") || lowerCategory.contains("pharmacy")) {
+            return "💊";
         } else {
             return "🏪";
         }
     }
 
     private String generateDeliveryTime() {
-        int min = 20 + random.nextInt(25); // 20-45 dakika arası
-        int max = min + 10 + random.nextInt(20); // min'den 10-30 dakika sonrası
+        int min = 25 + random.nextInt(30);
+        int max = min + 15 + random.nextInt(25);
         return min + "-" + max + " dk";
     }
 }

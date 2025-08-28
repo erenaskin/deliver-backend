@@ -35,4 +35,7 @@ public class Service {
     @Column(name = "display_name", length = 100)
     private String displayName;
 
+    @Column(name = "sort_order")
+    private Integer sortOrder;
+
 }

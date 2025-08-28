@@ -45,6 +45,7 @@ public class User implements UserDetails {
     private String phoneNumber;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     @Builder.Default
     private UserRole role = UserRole.USER;
 
@@ -100,7 +101,5 @@ public class User implements UserDetails {
         return enabled;
     }
 
-    public enum UserRole {
-        USER, ADMIN, VENDOR
-    }
+
 }

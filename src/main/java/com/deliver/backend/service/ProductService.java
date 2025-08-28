@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -140,6 +141,58 @@ public class ProductService {
     public List<ProductResponse> getFeaturedProducts(int limit) {
         log.info("Fetching featured products with limit: {}", limit);
         return productRepository.findByIsFeaturedTrue()
+                .stream()
+                .limit(limit)
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getPopularProductsByServiceType(String serviceType, int limit) {
+        log.info("Fetching popular products by service type: {} with limit: {}", serviceType, limit);
+        return productRepository.findTop10ByServiceTypeOrderByPopularityScoreDesc(serviceType)
+                .stream()
+                .limit(limit)
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getDailyPopularProducts(String serviceType, int limit) {
+        log.info("Fetching daily popular products for service type: {}", serviceType);
+        LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
+        return productRepository.findTop10ByServiceTypeAndLastViewedAtAfterOrderByViewCountDesc(serviceType, yesterday)
+                .stream()
+                .limit(limit)
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getTopRatedProducts(String serviceType, int limit) {
+        log.info("Fetching top rated products for service type: {}", serviceType);
+        return productRepository.findTop10ByServiceTypeAndRatingCountGreaterThanOrderByAverageRatingDesc(serviceType, 5)
+                .stream()
+                .limit(limit)
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getBestSellingProducts(String serviceType, int limit) {
+        log.info("Fetching best selling products for service type: {}", serviceType);
+        return productRepository.findTop10ByServiceTypeOrderByOrderCountDesc(serviceType)
+                .stream()
+                .limit(limit)
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getTrendingProducts(String serviceType, int limit) {
+        log.info("Fetching trending products for service type: {}", serviceType);
+        LocalDateTime weekAgo = LocalDateTime.now().minusDays(7);
+        return productRepository.findTop10ByServiceTypeAndCreatedAtAfterOrderByPopularityScoreDesc(serviceType, weekAgo)
                 .stream()
                 .limit(limit)
                 .map(this::mapToResponse)
