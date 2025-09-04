@@ -1,0 +1,54 @@
+### Register
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "testuser@example.com",
+  "password": "Test1234!"
+}
+
+### Login
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "Test1234!"
+}
+
+### Send Email Verification Code
+POST http://localhost:8080/api/auth/verify-email/send
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com"
+}
+
+### Confirm Email Verification
+POST http://localhost:8080/api/auth/verify-email/confirm?code=123456
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com"
+}
+
+### Send Password Reset Code
+POST http://localhost:8080/api/auth/reset-password/send
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com"
+}
+
+### Confirm Password Reset
+POST http://localhost:8080/api/auth/reset-password/confirm?code=123456&newPassword=NewTest1234!
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com"
+}
+
+### Logout
+POST http://localhost:8080/api/auth/logout
+Authorization: Bearer <JWT_TOKEN>
